@@ -17,7 +17,7 @@ export const instituteTable = pgTable("institute", {
   type: text("type").notNull(),
   email: text("email").notNull().unique(),
 
-  verified: boolean("boolean").default(false),
+  verified: boolean("verified").default(false),
 
   employeesCount: text("employees_count"),
   areaOfExpertise: text("area_of_expertise"),

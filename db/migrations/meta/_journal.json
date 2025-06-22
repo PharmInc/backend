@@ -78,6 +78,13 @@
       "when": 1750330510939,
       "tag": "0010_warm_black_tarantula",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1750577465915,
+      "tag": "0011_last_dazzler",
+      "breakpoints": true
     }
   ]
 }
