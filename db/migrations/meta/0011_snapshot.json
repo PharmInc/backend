@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
   "id": "27c1292e-59b0-4f64-9421-3147f3719169",
+=======
+  "id": "2a80355e-1e85-428f-902c-aa7c135ec48b",
+>>>>>>> b70de885a32142d2a4a990b59cb879513c0758dd
   "prevId": "03dada61-a916-4648-9bff-55d7648e2cbf",
   "version": "7",
   "dialect": "postgresql",
@@ -437,8 +441,13 @@
           "primaryKey": false,
           "notNull": false
         },
+<<<<<<< HEAD
         "user_id": {
           "name": "user_id",
+=======
+        "auth": {
+          "name": "auth",
+>>>>>>> b70de885a32142d2a4a990b59cb879513c0758dd
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
@@ -458,12 +467,21 @@
       },
       "indexes": {},
       "foreignKeys": {
+<<<<<<< HEAD
         "comment_user_id_auth_id_fk": {
           "name": "comment_user_id_auth_id_fk",
           "tableFrom": "comment",
           "tableTo": "auth",
           "columnsFrom": [
             "user_id"
+=======
+        "comment_auth_auth_id_fk": {
+          "name": "comment_auth_auth_id_fk",
+          "tableFrom": "comment",
+          "tableTo": "auth",
+          "columnsFrom": [
+            "auth"
+>>>>>>> b70de885a32142d2a4a990b59cb879513c0758dd
           ],
           "columnsTo": [
             "id"
@@ -553,8 +571,13 @@
           "primaryKey": false,
           "notNull": false
         },
+<<<<<<< HEAD
         "user_id": {
           "name": "user_id",
+=======
+        "auth": {
+          "name": "auth",
+>>>>>>> b70de885a32142d2a4a990b59cb879513c0758dd
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
@@ -574,12 +597,21 @@
       },
       "indexes": {},
       "foreignKeys": {
+<<<<<<< HEAD
         "post_user_id_auth_id_fk": {
           "name": "post_user_id_auth_id_fk",
           "tableFrom": "post",
           "tableTo": "auth",
           "columnsFrom": [
             "user_id"
+=======
+        "post_auth_auth_id_fk": {
+          "name": "post_auth_auth_id_fk",
+          "tableFrom": "post",
+          "tableTo": "auth",
+          "columnsFrom": [
+            "auth"
+>>>>>>> b70de885a32142d2a4a990b59cb879513c0758dd
           ],
           "columnsTo": [
             "id"
@@ -643,8 +675,13 @@
           "primaryKey": false,
           "notNull": true
         },
+<<<<<<< HEAD
         "boolean": {
           "name": "boolean",
+=======
+        "verified": {
+          "name": "verified",
+>>>>>>> b70de885a32142d2a4a990b59cb879513c0758dd
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,

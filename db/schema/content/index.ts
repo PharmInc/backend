@@ -20,7 +20,7 @@ export const basePost = {
   shares: integer("shares"),
   saves: integer("saves"),
 
-  userId: uuid("user_id").references(() => authTable.id),
+  auth: uuid("auth").references(() => authTable.id),
 };
 
 export const postTable = pgTable("post", {
@@ -48,7 +48,7 @@ export const applicationTable = pgTable("application", {
   jobId: uuid("job_id")
     .notNull()
     .references(() => jobTable.id),
-  authId: uuid("user_id")
+  userId: uuid("user_id")
     .notNull()
     .references(() => authTable.id),
 
