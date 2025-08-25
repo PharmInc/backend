@@ -20,7 +20,7 @@ export const basePost = {
   shares: integer("shares"),
   saves: integer("saves"),
 
-  auth: uuid("auth_id").references(() => authTable.id),
+  userId: uuid("user_id").references(() => authTable.id),
 };
 
 export const postTable = pgTable("post", {

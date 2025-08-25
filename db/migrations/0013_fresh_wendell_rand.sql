@@ -1,0 +1,1 @@
+ALTER TABLE "post" RENAME COLUMN "attachmentIdd" TO "attachmentId";
