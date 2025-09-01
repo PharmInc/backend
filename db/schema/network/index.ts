@@ -12,7 +12,7 @@ export const base = {
   id2: uuid("id2")
     .notNull()
     .references(() => authTable.id),
-  id2_poster_type: text("id1_poster_type").notNull().default("user"),
+  id2_poster_type: text("id2_poster_type").notNull().default("user"),
 };
 
 export const followTable = pgTable("follow", {
