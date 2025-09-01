@@ -21,6 +21,7 @@ export const basePost = {
   saves: integer("saves"),
 
   auth: uuid("auth").references(() => authTable.id),
+  posterType: text("poster_type").notNull().default("user"),
 };
 
 export const postTable = pgTable("post", {
