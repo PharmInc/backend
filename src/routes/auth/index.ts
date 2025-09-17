@@ -57,7 +57,7 @@ authRouter.openapi(signin, async (c) => {
 
 authRouter.openapi(signup, async (c) => {
   const body = await c.req.json();
-  const { email, password, role, ...userData } = body;
+  const { email, password, role } = body;
 
   try {
     const existing = await prisma.auth.findUnique({ where: { email } });
@@ -77,24 +77,27 @@ authRouter.openapi(signup, async (c) => {
         },
       });
 
-      const user = await tx.user.create({
-        data: {
-          id: auth.id, // userId = authId
-          name: userData.name,
-          location: userData.location,
-          specialty: userData.specialty,
-          gender: userData.gender,
-          role: userData.role || "DOCTOR",
-          headline: userData.headline ?? null,
-          about: userData.about ?? null,
-        },
-      });
-
-      return user;
+      return auth;
     });
 
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      logger.error("JWT secret not set");
+      return c.json({ error: "JWT secret not set" }, 500);
+    }
+
+    const token = await sign(
+      {
+        id: result.id,
+        role: result.role,
+        iat: Math.floor(Date.now() / 1000),
+        exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1h
+      },
+      secret
+    );
+
     logger.info({ email, userId: result.id }, "Signup successful");
-    return c.json(result, 201);
+    return c.json({ token }, 201);
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       logger.error({ err }, "Prisma error during signup");

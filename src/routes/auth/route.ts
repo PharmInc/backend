@@ -1,6 +1,5 @@
 import { z, createRoute } from "@hono/zod-openapi";
 import { AuthSchema } from "../../types/auth.js";
-import { UserSchema } from "../../types/user.js";
 
 export const signin = createRoute({
   method: "post",
@@ -31,8 +30,6 @@ export const signin = createRoute({
         "application/json": {
           schema: z.object({
             token: z.string().openapi({
-              example:
-                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJSb2xlIjoiVVNFUiIsImlhdCI6MTY5Njg5ODQwMCwiZXhwIjoxNjk2OTAxMDAwfQ.Dy8Nj84IlXb8OwU9U2hJh5lQhHk1YFYH1x1W3KwO6Xg",
               description:
                 "The signed JSON Web Token. Contains auth id, role, issued at time and expiration time.",
             }),
@@ -105,41 +102,31 @@ export const signup = createRoute({
   path: "/signup",
   tags: ["Auth"],
   description:
-    "Register a new user in the system. Creates both the auth record (email, password, role) and the corresponding user profile. Responds with the newly created user object.",
+    "Register a new account by creating an auth record. Returns a JWT for immediate authentication.",
   request: {
     body: {
       required: true,
       description:
-        "User details and credentials required for creating a new account.",
+        "Credentials and role required for creating a new auth record.",
       content: {
         "application/json": {
           schema: AuthSchema.omit({
             id: true,
             created_at: true,
-          }).merge(
-            UserSchema.omit({
-              id: true,
-              created_at: true,
-              verified: true,
-              headline: true,
-              about: true,
-              role: true,
-            })
-          ),
+          }),
         },
       },
     },
   },
   responses: {
     201: {
-      description:
-        "User registered successfully. Returns the newly created user profile (without password).",
+      description: "Auth record created successfully. Returns a JWT.",
       content: {
         "application/json": {
-          schema: UserSchema.omit({
-            created_at: true,
-            headline: true,
-            about: true,
+          schema: z.object({
+            token: z.string().openapi({
+              description: "JWT token for authentication",
+            }),
           }),
         },
       },
@@ -160,7 +147,7 @@ export const signup = createRoute({
     },
     409: {
       description:
-        "Conflict. A user with the provided email already exists in the system.",
+        "Conflict. An auth record with the provided email already exists.",
       content: {
         "application/json": {
           schema: z.object({
@@ -181,7 +168,8 @@ export const signup = createRoute({
           schema: z.object({
             error: z.string().openapi({
               example: "Database connection error",
-              description: "Returned when the server cannot persist the user.",
+              description:
+                "Returned when the server cannot persist the auth record.",
             }),
           }),
         },
