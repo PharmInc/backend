@@ -1,6 +1,6 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import prisma from "../../lib/prisma-client.js";
-import { getServiceLogger } from "../../lib/loggin-client.js";
+import { getServiceLogger } from "../../lib/logging-client.js";
 
 import { sign } from "hono/jwt";
 import bcrypt from "bcryptjs";
