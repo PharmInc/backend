@@ -7,7 +7,6 @@ services:
       - "${PORT:-3000}:3000"
     environment:
       DATABASE_URL: "postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@database:${DATABASE_PORT:-5432}/${DATABASE_NAME}?schema=public"
-      CACHE_URL: "redis://${CACHE_USERNAME}:${CACHE_PASSWORD}@cache:${CACHE_PORT:-6379}"
     depends_on:
       cache:
         condition: service_started
@@ -15,18 +14,26 @@ services:
         condition: service_healthy
 
   database:
-    container_name: service-database
+    container_name: pharminc-database
     image: postgres:15-alpine
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:-pharminc}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+      POSTGRES_DB: ${POSTGRES_DB:-pharminc}
     volumes:
-      - ${DATABASE_VOLUME:-pg_data}:/var/lib/postgresql/data
+      - pg_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} || exit 1",
+        ]
       interval: 5s
       timeout: 5s
       retries: 5
+
+volumes:
+  pg_data:
+    driver: local

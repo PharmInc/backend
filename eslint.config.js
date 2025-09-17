@@ -6,36 +6,36 @@ import prettierConfig from "eslint-config-prettier";
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
-    {
-        files: ["src/**/*.{js,ts}"],
-        languageOptions: {
-            parser: tsParser,
-            parserOptions: {
-                ecmaVersion: "latest",
-                sourceType: "module",
-                ecmaFeatures: {
-                    jsx: true,
-                },
-            },
-            globals: globals.browser,
+  {
+    files: ["src/**/*.{js,ts}"],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: "latest",
+        sourceType: "module",
+        ecmaFeatures: {
+          jsx: true,
         },
-        plugins: {
-            "@typescript-eslint": tseslint,
-            prettier: prettierPlugin,
-        },
-        rules: {
-            ...tseslint.configs.recommended.rules,
-            ...prettierConfig.rules,
-            "prettier/prettier": [
-                "error",
-                {
-                    semi: true,
-                    singleQuote: false,
-                    trailingComma: "es5",
-                    printWidth: 80,
-                    tabWidth: 4,
-                },
-            ],
-        },
+      },
+      globals: globals.browser,
     },
+    plugins: {
+      "@typescript-eslint": tseslint,
+      prettier: prettierPlugin,
+    },
+    rules: {
+      ...tseslint.configs.recommended.rules,
+      ...prettierConfig.rules,
+      "prettier/prettier": [
+        "error",
+        {
+          semi: true,
+          singleQuote: false,
+          trailingComma: "es5",
+          printWidth: 80,
+          tabWidth: 2,
+        },
+      ],
+    },
+  },
 ];
