@@ -1,5 +1,5 @@
 # Base image
-FROM node:20-slim
+FROM node:slim
 
 # Install OpenSSL and other required dependencies
 RUN apt-get update -y && \
