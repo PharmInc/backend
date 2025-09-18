@@ -7,6 +7,7 @@ import { cors } from "hono/cors";
 import { type JwtVariables } from "hono/jwt";
 
 import authRouter from "./routes/auth/index.js";
+import { privUserRouter } from "./routes/user/index.js";
 
 type Variables = JwtVariables;
 
@@ -35,6 +36,7 @@ app.doc("/openapi.json", {
 app.use("/docs", swaggerUI({ url: "/openapi.json" }));
 
 app.route("/v1/auth", authRouter);
+app.route("/v1/user", privUserRouter);
 
 const port = 3000;
 console.log(`Server is running on http://localhost:${port}`);
