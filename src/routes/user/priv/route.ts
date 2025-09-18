@@ -3,7 +3,7 @@ import { UserSchema } from "../../../types/user.js";
 
 export const createUser = createRoute({
   method: "post",
-  path: "/user",
+  path: "/",
   tags: ["User"],
   description:
     "Create a new user. Requires authentication. The user id will be set to the authenticated user's id (from JWT).",
@@ -76,7 +76,7 @@ export const createUser = createRoute({
 
 export const updateUser = createRoute({
   method: "put",
-  path: "/user/{id}",
+  path: "/{id}",
   tags: ["User"],
   description:
     "Update an existing user. Only the authenticated user can update their own record.",
@@ -153,7 +153,7 @@ export const updateUser = createRoute({
 
 export const deleteUser = createRoute({
   method: "delete",
-  path: "/user/{id}",
+  path: "/{id}",
   tags: ["User"],
   description:
     "Delete a user by ID. Only the authenticated user can delete their own record.",

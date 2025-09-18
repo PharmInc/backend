@@ -116,4 +116,4 @@ userRouter.openapi(deleteUser, async (c) => {
   }
 });
 
-export default userRouter;
+export { userRouter as privUserRouter };
