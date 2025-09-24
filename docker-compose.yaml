@@ -6,8 +6,6 @@ services:
     environment:
       DATABASE_URL: "postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@database:${DATABASE_PORT:-5432}/${DATABASE_DB}?schema=public"
     depends_on:
-      cache:
-        condition: service_started
       database:
         condition: service_healthy
     labels:
