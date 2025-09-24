@@ -18,6 +18,13 @@ enum UserRoles {
   NURSE
 }
 
+enum InstituteRoles {
+  HOSPITAL
+  CLINIC
+  LAB
+  PHARMACY
+}
+
 model Auth {
   id         String    @id @default(uuid())
   created_at DateTime  @default(now())
@@ -30,13 +37,36 @@ model User {
   id         String   @id @default(uuid())
   created_at DateTime @default(now())
 
-  name      String
-  location  String
-  verified  Boolean   @default(false)
-  specialty String
-  gender    String
-  role      UserRoles @default(DOCTOR)
+  name        String
+  location    String
+  verified    Boolean     @default(false)
+  gender      String
+  role        UserRoles   @default(DOCTOR)
+  specialties Specialty[] @relation("UserSpecialties")
 
   headline String?
   about    String?
+}
+
+model Institute {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+
+  name        String
+  location    String
+  verified    Boolean        @default(false)
+  role        InstituteRoles @default(HOSPITAL)
+  specialties Specialty[]    @relation("InstituteSpecialties")
+
+  affiliatedUniversity String?
+  yearEstablished      Int?
+  ownership            String?
+}
+
+model Specialty {
+  id   String @id @default(uuid())
+  name String
+
+  users      User[]      @relation("UserSpecialties")
+  institutes Institute[] @relation("InstituteSpecialties")
 }

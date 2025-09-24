@@ -107,7 +107,6 @@ export const getUserById = createRoute({
     },
   },
 });
-
 export const searchUsers = createRoute({
   method: "get",
   path: "/search",
@@ -116,9 +115,29 @@ export const searchUsers = createRoute({
     "Search for users by name, specialty, location, or other fields. Supports pagination.",
   request: {
     query: z.object({
-      q: z.string().openapi({
+      q: z.string().optional().openapi({
         example: "Jane",
-        description: "Search query (name, specialty, etc.)",
+        description: "Search query (name, headline, about, etc.)",
+      }),
+      specialty: z.string().optional().openapi({
+        example: "Cardiology",
+        description: "Filter by specialty",
+      }),
+      location: z.string().optional().openapi({
+        example: "New York",
+        description: "Filter by location",
+      }),
+      role: z.string().optional().openapi({
+        example: "DOCTOR",
+        description: "Filter by user role",
+      }),
+      verified: z.string().optional().openapi({
+        example: "true",
+        description: "Filter by verification status (true/false)",
+      }),
+      gender: z.string().optional().openapi({
+        example: "female",
+        description: "Filter by gender",
       }),
       page: z.string().optional().openapi({
         example: "1",

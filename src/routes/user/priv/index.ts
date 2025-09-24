@@ -3,10 +3,12 @@ import prisma from "../../../lib/prisma-client.js";
 import { getServiceLogger } from "../../../lib/logging-client.js";
 
 import { createUser, updateUser, deleteUser } from "./route.js";
+import { UserCreateUpdateSchema } from "./route.js"; // from previous step
 
 const userRouter = new OpenAPIHono();
 const logger = getServiceLogger("User");
 
+// CREATE USER
 userRouter.openapi(createUser, async (c) => {
   const jwtPayload = c.get("jwtPayload");
   if (!jwtPayload || !jwtPayload.id) {
@@ -14,6 +16,7 @@ userRouter.openapi(createUser, async (c) => {
     return c.json({ error: "Unauthorized" }, 400);
   }
   const authId = jwtPayload.id;
+
   let body;
   try {
     body = await c.req.json();
@@ -21,14 +24,40 @@ userRouter.openapi(createUser, async (c) => {
     logger.warn({ authId, err }, "Malformed JSON body");
     return c.json({ error: "Invalid input" }, 400);
   }
-  const userData = { ...body, id: authId };
+
+  const parseResult = UserCreateUpdateSchema.safeParse(body);
+  if (!parseResult.success) {
+    logger.warn(
+      { authId, errors: parseResult.error.errors },
+      "Validation failed"
+    );
+    return c.json({ error: "Invalid input" }, 400);
+  }
+
+  const userData = { ...parseResult.data, id: authId };
+
   try {
     const existing = await prisma.user.findUnique({ where: { id: authId } });
     if (existing) {
       logger.warn({ authId }, "Attempt to create duplicate user");
       return c.json({ error: "User already exists" }, 409);
     }
-    const user = await prisma.user.create({ data: userData });
+
+    const user = await prisma.user.create({
+      data: {
+        ...userData,
+        specialties: userData.specialties
+          ? {
+              connectOrCreate: userData.specialties.map((s) => ({
+                where: { id: s.id },
+                create: s,
+              })),
+            }
+          : undefined,
+      },
+      include: { specialties: true }, // include specialties in response
+    });
+
     logger.info({ authId, user }, "User created successfully");
     return c.json(user, 201);
   } catch (err) {
@@ -37,18 +66,22 @@ userRouter.openapi(createUser, async (c) => {
   }
 });
 
+// UPDATE USER
 userRouter.openapi(updateUser, async (c) => {
   const { id } = c.req.valid("param");
   const jwtPayload = c.get("jwtPayload");
+
   if (!jwtPayload || !jwtPayload.id) {
     logger.warn("JWT payload missing or invalid");
     return c.json({ error: "Unauthorized" }, 400);
   }
+
   const authId = jwtPayload.id;
   if (id !== authId) {
     logger.warn({ authId, id }, "User tried to update another user's profile");
     return c.json({ error: "Forbidden: cannot update another user" }, 403);
   }
+
   let body;
   try {
     body = await c.req.json();
@@ -56,11 +89,36 @@ userRouter.openapi(updateUser, async (c) => {
     logger.warn({ authId, id, err }, "Malformed JSON body");
     return c.json({ error: "Invalid input" }, 400);
   }
+
+  const parseResult = UserCreateUpdateSchema.safeParse(body);
+  if (!parseResult.success) {
+    logger.warn(
+      { authId, errors: parseResult.error.errors },
+      "Validation failed"
+    );
+    return c.json({ error: "Invalid input" }, 400);
+  }
+
+  const updateData = parseResult.data;
+
   try {
     const user = await prisma.user.update({
       where: { id },
-      data: body,
+      data: {
+        ...updateData,
+        specialties: updateData.specialties
+          ? {
+              set: [], // remove old specialties
+              connectOrCreate: updateData.specialties.map((s) => ({
+                where: { id: s.id },
+                create: s,
+              })),
+            }
+          : undefined,
+      },
+      include: { specialties: true }, // include specialties in response
     });
+
     logger.info({ authId, user }, "User updated successfully");
     return c.json(user, 200);
   } catch (err) {
@@ -81,6 +139,7 @@ userRouter.openapi(updateUser, async (c) => {
   }
 });
 
+// DELETE USER
 userRouter.openapi(deleteUser, async (c) => {
   const { id } = c.req.valid("param");
   const jwtPayload = c.get("jwtPayload");

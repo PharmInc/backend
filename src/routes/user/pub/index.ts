@@ -2,20 +2,11 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import prisma from "../../../lib/prisma-client.js";
 import { getServiceLogger } from "../../../lib/logging-client.js";
 import { getAllUsers, getUserById, searchUsers } from "./route.js";
+import { UserQuery } from "../../../types/user.js";
+import { Prisma } from "@prisma/client";
 
 const userRouter = new OpenAPIHono();
 const logger = getServiceLogger("User");
-
-type UserQuery = {
-  page?: string;
-  pageSize?: string;
-  specialty?: string;
-  location?: string;
-  role?: string;
-  verified?: string;
-  gender?: string;
-  name?: string;
-};
 
 userRouter.openapi(getAllUsers, async (c) => {
   let query: UserQuery;
@@ -30,16 +21,21 @@ userRouter.openapi(getAllUsers, async (c) => {
   const skip = (page - 1) * pageSize;
   const take = pageSize;
 
-  // Build Prisma filter
   const where: Record<string, unknown> = {};
-  if (query.specialty) where.specialty = query.specialty;
-  if (query.location) where.location = query.location;
+  if (query.specialties) {
+    where.specialties = {
+      some: { name: { equals: query.specialties, mode: "insensitive" } },
+    };
+  }
+  if (query.location)
+    where.location = { equals: query.location, mode: "insensitive" };
   if (query.role) where.role = query.role;
   if (query.verified !== undefined) {
     if (query.verified === "true") where.verified = true;
     else if (query.verified === "false") where.verified = false;
   }
-  if (query.gender) where.gender = query.gender;
+  if (query.gender)
+    where.gender = { equals: query.gender, mode: "insensitive" };
   if (query.name) where.name = { contains: query.name, mode: "insensitive" };
 
   try {
@@ -49,6 +45,7 @@ userRouter.openapi(getAllUsers, async (c) => {
         skip,
         take,
         orderBy: { created_at: "desc" },
+        include: { specialties: true }, // include specialties in result
       }),
       prisma.user.count({ where }),
     ]);
@@ -73,7 +70,10 @@ userRouter.openapi(getUserById, async (c) => {
   }
   const id = param.id;
   try {
-    const user = await prisma.user.findUnique({ where: { id } });
+    const user = await prisma.user.findUnique({
+      where: { id },
+      include: { specialties: true }, // include specialties
+    });
     if (!user) {
       logger.warn({ id }, "User not found");
       return c.json({ error: "User not found" }, 404);
@@ -87,27 +87,47 @@ userRouter.openapi(getUserById, async (c) => {
 });
 
 userRouter.openapi(searchUsers, async (c) => {
-  let query: { q: string; page?: string; pageSize?: string };
+  let query: UserQuery;
   try {
     query = c.req.valid("query");
   } catch (err) {
     logger.warn({ err }, "Invalid search query parameters");
     return c.json({ error: "Invalid query parameters" }, 400);
   }
-  const { q } = query;
+
+  const { name, specialties, location, role, verified, gender } = query;
   const page = parseInt(query.page || "1");
   const pageSize = parseInt(query.pageSize || "20");
   const skip = (page - 1) * pageSize;
   const take = pageSize;
 
-  // Search by name, specialty, or location (case-insensitive, partial match)
-  const where = {
-    OR: [
-      { name: { contains: q, mode: "insensitive" as const } },
-      { specialty: { contains: q, mode: "insensitive" as const } },
-      { location: { contains: q, mode: "insensitive" as const } },
-    ],
-  };
+  // Build Prisma filter
+  const where: Prisma.UserWhereInput = {};
+
+  // Name search
+  if (name) {
+    where.name = { contains: name, mode: "insensitive" };
+  }
+
+  // Filter specialties (comma-separated string to array)
+  if (specialties) {
+    const specialtyArray = specialties.split(",").map((s) => s.trim());
+    if (specialtyArray.length > 0) {
+      where.specialties = {
+        some: {
+          OR: specialtyArray.map((s) => ({
+            name: { equals: s, mode: "insensitive" },
+          })),
+        },
+      };
+    }
+  }
+
+  // Other filters
+  if (location) where.location = { equals: location, mode: "insensitive" };
+  if (role) where.role = role as Prisma.UserWhereInput["role"];
+  if (verified !== undefined) where.verified = verified === "true";
+  if (gender) where.gender = { equals: gender, mode: "insensitive" };
 
   try {
     const [users, total] = await Promise.all([
@@ -116,10 +136,15 @@ userRouter.openapi(searchUsers, async (c) => {
         skip,
         take,
         orderBy: { created_at: "desc" },
+        include: { specialties: true },
       }),
       prisma.user.count({ where }),
     ]);
-    logger.info({ q, page, pageSize, total }, "Fetched users search results");
+
+    logger.info(
+      { query, page, pageSize, total },
+      "Fetched users search results"
+    );
     return c.json({ users, page, pageSize, total }, 200);
   } catch (err) {
     logger.error({ err, query }, "Database error during searchUsers");

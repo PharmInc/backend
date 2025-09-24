@@ -1,5 +1,18 @@
 import { z, createRoute } from "@hono/zod-openapi";
 import { UserSchema } from "../../../types/user.js";
+import { SpecialtySchema } from "../../../types/specialty.js";
+
+export const UserCreateUpdateSchema = UserSchema.omit({
+  id: true,
+  created_at: true,
+  verified: true,
+  headline: true,
+  about: true,
+}).extend({
+  specialties: z.array(SpecialtySchema).optional().openapi({
+    description: "List of specialties associated with the user.",
+  }),
+});
 
 export const createUser = createRoute({
   method: "post",
@@ -15,13 +28,7 @@ export const createUser = createRoute({
         "User data to create. The id and created_at fields are ignored.",
       content: {
         "application/json": {
-          schema: UserSchema.omit({
-            id: true,
-            created_at: true,
-            verified: true,
-            headline: true,
-            about: true,
-          }),
+          schema: UserCreateUpdateSchema,
         },
       },
     },
@@ -89,7 +96,7 @@ export const updateUser = createRoute({
         "User data to update. The id and created_at fields are ignored.",
       content: {
         "application/json": {
-          schema: UserSchema.omit({ id: true, created_at: true }),
+          schema: UserCreateUpdateSchema,
         },
       },
     },
