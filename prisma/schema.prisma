@@ -52,15 +52,19 @@ model Institute {
   id         String   @id @default(uuid())
   created_at DateTime @default(now())
 
-  name        String
-  location    String
-  verified    Boolean        @default(false)
-  role        InstituteRoles @default(HOSPITAL)
-  specialties Specialty[]    @relation("InstituteSpecialties")
+  name          String         @unique
+  location      String
+  verified      Boolean        @default(false)
+  contactEmail  String
+  contactNumber String
+  role          InstituteRoles @default(HOSPITAL)
+  specialties   Specialty[]    @relation("InstituteSpecialties")
 
   affiliatedUniversity String?
   yearEstablished      Int?
   ownership            String?
+  headline             String?
+  about                String?
 }
 
 model Specialty {

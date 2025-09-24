@@ -8,11 +8,14 @@ import { type JwtVariables } from "hono/jwt";
 
 import authRouter from "./routes/auth/index.js";
 
-import { privUserRouter } from "./routes/user/priv/index.js";
 import { pubUserRouter } from "./routes/user/pub/index.js";
+import { privUserRouter } from "./routes/user/priv/index.js";
 
 import { pubSpecialtyRouter } from "./routes/specialty/pub/index.js";
 import { privSpecialtyRouter } from "./routes/specialty/priv/index.js";
+
+import { pubInstituteRouter } from "./routes/institute/pub/index.js";
+import { privInstituteRouter } from "./routes/institute/priv/index.js";
 
 type Variables = JwtVariables;
 
@@ -41,10 +44,15 @@ app.doc("/openapi.json", {
 app.use("/docs", swaggerUI({ url: "/openapi.json" }));
 
 app.route("/v1/auth", authRouter);
+
 app.route("/v1/user", privUserRouter);
 app.route("/v1/user", pubUserRouter);
-app.route("/v1/specialty", pubSpecialtyRouter);
+
+app.route("/v1/institute", privInstituteRouter);
+app.route("/v1/institute", pubInstituteRouter);
+
 app.route("/v1/specialty", privSpecialtyRouter);
+app.route("/v1/specialty", pubSpecialtyRouter);
 
 const port = 3000;
 console.log(`Server is running on http://localhost:${port}`);
