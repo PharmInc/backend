@@ -3,8 +3,6 @@ services:
     container_name: service-api
     build:
       context: .
-    ports:
-      - "${PORT:-3000}:3000"
     environment:
       DATABASE_URL: "postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@database:${DATABASE_PORT:-5432}/${DATABASE_NAME}?schema=public"
     depends_on:
@@ -12,6 +10,9 @@ services:
         condition: service_started
       database:
         condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`${API_HOST:-api.pharminc.in`)"
 
   database:
     container_name: pharminc-database
