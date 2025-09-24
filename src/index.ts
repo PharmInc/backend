@@ -11,6 +11,9 @@ import authRouter from "./routes/auth/index.js";
 import { privUserRouter } from "./routes/user/priv/index.js";
 import { pubUserRouter } from "./routes/user/pub/index.js";
 
+import { pubSpecialtyRouter } from "./routes/specialty/pub/index.js";
+import { privSpecialtyRouter } from "./routes/specialty/priv/index.js";
+
 type Variables = JwtVariables;
 
 const app = new OpenAPIHono<{ Variables: Variables }>();
@@ -40,6 +43,8 @@ app.use("/docs", swaggerUI({ url: "/openapi.json" }));
 app.route("/v1/auth", authRouter);
 app.route("/v1/user", privUserRouter);
 app.route("/v1/user", pubUserRouter);
+app.route("/v1/specialty", pubSpecialtyRouter);
+app.route("/v1/specialty", privSpecialtyRouter);
 
 const port = 3000;
 console.log(`Server is running on http://localhost:${port}`);

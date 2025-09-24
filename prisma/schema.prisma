@@ -65,7 +65,7 @@ model Institute {
 
 model Specialty {
   id   String @id @default(uuid())
-  name String
+  name String @unique
 
   users      User[]      @relation("UserSpecialties")
   institutes Institute[] @relation("InstituteSpecialties")

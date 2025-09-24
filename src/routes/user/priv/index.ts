@@ -50,7 +50,7 @@ userRouter.openapi(createUser, async (c) => {
           ? {
               connectOrCreate: userData.specialties.map((s) => ({
                 where: { id: s.id },
-                create: s,
+                create: { name: s.name },
               })),
             }
           : undefined,
@@ -111,7 +111,7 @@ userRouter.openapi(updateUser, async (c) => {
               set: [], // remove old specialties
               connectOrCreate: updateData.specialties.map((s) => ({
                 where: { id: s.id },
-                create: s,
+                create: { name: s.name },
               })),
             }
           : undefined,
