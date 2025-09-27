@@ -37,12 +37,13 @@ model User {
   id         String   @id @default(uuid())
   created_at DateTime @default(now())
 
-  name        String
-  location    String
-  verified    Boolean     @default(false)
-  gender      String
-  role        UserRoles   @default(DOCTOR)
-  specialties Specialty[] @relation("UserSpecialties")
+  name           String
+  location       String
+  verified       Boolean       @default(false)
+  gender         String
+  role           UserRoles     @default(DOCTOR)
+  specialties    Specialty[]   @relation("UserSpecialties")
+  JobApplication Application[]
 
   headline String?
   about    String?
@@ -59,6 +60,7 @@ model Institute {
   contactNumber String
   role          InstituteRoles @default(HOSPITAL)
   specialties   Specialty[]    @relation("InstituteSpecialties")
+  Job           Job[]
 
   affiliatedUniversity String?
   yearEstablished      Int?
@@ -67,10 +69,62 @@ model Institute {
   about                String?
 }
 
+model Job {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  title           String
+  description     String
+  jobType         String
+  workLocation    String
+  experienceLevel String
+  requirements    String
+  salaryMin       Int
+  salaryMax       Int
+  status          String @default("active")
+
+  shortDescription    String?
+  salaryCurrency      String?   @default("INR")
+  applicationDeadline DateTime?
+  contactEmail        String?
+  contactPhone        String?
+  contactPerson       String?
+  additionalInfo      Json?
+
+  institute   Institute @relation(fields: [instituteId], references: [id], onDelete: Cascade)
+  instituteId String
+
+  specialties  Specialty[]   @relation("JobSpecialties")
+  applications Application[]
+}
+
+model Application {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  status      String   @default("pending")
+  appliedDate DateTime @default(now())
+  resumeUrl   String
+
+  coverLetter       String?
+  experienceYears   Int?
+  currentPosition   String?
+  currentInstitute  String?
+  additionalDetails Json?
+
+  job    Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobId  String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+}
+
 model Specialty {
   id   String @id @default(uuid())
   name String @unique
 
   users      User[]      @relation("UserSpecialties")
   institutes Institute[] @relation("InstituteSpecialties")
+  jobs       Job[]       @relation("JobSpecialties")
 }
