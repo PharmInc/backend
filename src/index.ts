@@ -20,6 +20,8 @@ import { privInstituteRouter } from "./routes/institute/priv/index.js";
 import { pubJobRouter } from "./routes/jobs/pub/index.js";
 import { privJobRouter } from "./routes/jobs/priv/index.js";
 
+import { privApplicationRouter } from "./routes/application/priv/index.js";
+
 type Variables = JwtVariables;
 
 const app = new OpenAPIHono<{ Variables: Variables }>();
@@ -56,6 +58,8 @@ app.route("/v1/institute", pubInstituteRouter);
 
 app.route("/v1/job", pubJobRouter);
 app.route("/v1/job", privJobRouter);
+
+app.route("/v1/application", privApplicationRouter);
 
 app.route("/v1/specialty", privSpecialtyRouter);
 app.route("/v1/specialty", pubSpecialtyRouter);
