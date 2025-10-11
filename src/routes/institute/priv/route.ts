@@ -204,3 +204,48 @@ export const deleteInstitute = createRoute({
     },
   },
 });
+
+export const getMyInstitute = createRoute({
+  method: "get",
+  path: "/me",
+  tags: ["Institute"],
+  description: "Get the institute details of the currently authenticated user.",
+  security: [{ BearerAuth: [] }],
+  responses: {
+    200: {
+      description: "Institute details retrieved successfully.",
+      content: {
+        "application/json": {
+          schema: InstituteSchema,
+        },
+      },
+    },
+    401: {
+      description: "Unauthorized. JWT is missing or invalid.",
+      content: {
+        "application/json": {
+          schema: z.object({ error: z.string() }),
+          example: { error: "Unauthorized" },
+        },
+      },
+    },
+    404: {
+      description: "Institute not found for this user.",
+      content: {
+        "application/json": {
+          schema: z.object({ error: z.string() }),
+          example: { error: "Institute not found" },
+        },
+      },
+    },
+    500: {
+      description: "Internal server error.",
+      content: {
+        "application/json": {
+          schema: z.object({ error: z.string() }),
+          example: { error: "Database error" },
+        },
+      },
+    },
+  },
+});

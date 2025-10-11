@@ -2,7 +2,7 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import prisma from "../../../lib/prisma-client.js";
 import { getServiceLogger } from "../../../lib/logging-client.js";
 
-import { createUser, updateUser, deleteUser } from "./route.js";
+import { createUser, updateUser, deleteUser, getMyUser } from "./route.js";
 import { UserCreateUpdateSchema } from "./route.js"; // from previous step
 
 const userRouter = new OpenAPIHono();
@@ -173,6 +173,25 @@ userRouter.openapi(deleteUser, async (c) => {
     logger.error({ err, authId, id }, "Database error during user deletion");
     return c.json({ error: "Database error" }, 500);
   }
+});
+
+userRouter.openapi(getMyUser, async (c) => {
+  const jwtPayload = c.get("jwtPayload");
+
+  if (!jwtPayload?.id) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: jwtPayload.id },
+    include: { specialties: true },
+  });
+
+  if (!user) {
+    return c.json({ error: "User not found" }, 404);
+  }
+
+  return c.json(user, 200);
 });
 
 export { userRouter as privUserRouter };

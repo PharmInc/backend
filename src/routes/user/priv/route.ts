@@ -210,3 +210,48 @@ export const deleteUser = createRoute({
     },
   },
 });
+
+export const getMyUser = createRoute({
+  method: "get",
+  path: "/me",
+  tags: ["User"],
+  description: "Get the user details of the currently authenticated user.",
+  security: [{ BearerAuth: [] }],
+  responses: {
+    200: {
+      description: "User details retrieved successfully.",
+      content: {
+        "application/json": {
+          schema: UserSchema,
+        },
+      },
+    },
+    401: {
+      description: "Unauthorized. JWT is missing or invalid.",
+      content: {
+        "application/json": {
+          schema: z.object({ error: z.string() }),
+          example: { error: "Unauthorized" },
+        },
+      },
+    },
+    404: {
+      description: "User not found for this token.",
+      content: {
+        "application/json": {
+          schema: z.object({ error: z.string() }),
+          example: { error: "User not found" },
+        },
+      },
+    },
+    500: {
+      description: "Internal server error.",
+      content: {
+        "application/json": {
+          schema: z.object({ error: z.string() }),
+          example: { error: "Database error" },
+        },
+      },
+    },
+  },
+});

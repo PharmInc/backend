@@ -6,6 +6,7 @@ import {
   createInstitute,
   updateInstitute,
   deleteInstitute,
+  getMyInstitute,
   InstituteCreateUpdateSchema,
 } from "./route.js";
 
@@ -159,6 +160,27 @@ instituteRouter.openapi(deleteInstitute, async (c) => {
     logger.error({ err, id }, "Database error during institute deletion");
     return c.json({ error: "Database error" }, 500);
   }
+});
+
+instituteRouter.openapi(getMyInstitute, async (c) => {
+  const jwtPayload = c.get("jwtPayload");
+
+  if (!jwtPayload?.id) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+
+  const institute = await prisma.institute.findUnique({
+    where: { id: jwtPayload.id },
+    include: {
+      specialties: true,
+    },
+  });
+
+  if (!institute) {
+    return c.json({ error: "Institute not found" }, 404);
+  }
+
+  return c.json(institute, 200);
 });
 
 export { instituteRouter as privInstituteRouter };
