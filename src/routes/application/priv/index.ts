@@ -21,7 +21,7 @@ applicationRouter.openapi(getApplicationsByJobId, async (c) => {
   const { jobId } = c.req.valid("param");
 
   if (!jwtPayload) return c.json({ error: "Unauthorized" }, 401);
-  if (jwtPayload.role !== "institute")
+  if (jwtPayload.role !== "INSTITUTE")
     return c.json({ error: "Forbidden" }, 403);
 
   try {
@@ -46,7 +46,7 @@ applicationRouter.openapi(getApplicationsByUserId, async (c) => {
   const { userId } = c.req.valid("param");
 
   if (!jwtPayload) return c.json({ error: "Unauthorized" }, 401);
-  if (jwtPayload.id !== userId && jwtPayload.role !== "institute")
+  if (jwtPayload.id !== userId && jwtPayload.role !== "INSTITUTE")
     return c.json({ error: "Forbidden" }, 403);
 
   try {
@@ -71,7 +71,7 @@ applicationRouter.openapi(getUserApplicationBYJobId, async (c) => {
   const { userId, jobId } = c.req.valid("param");
 
   if (!jwtPayload) return c.json({ error: "Unauthorized" }, 401);
-  if (jwtPayload.id !== userId && jwtPayload.role !== "institute")
+  if (jwtPayload.id !== userId && jwtPayload.role !== "INSTITUTE")
     return c.json({ error: "Forbidden" }, 403);
 
   try {
@@ -106,7 +106,7 @@ applicationRouter.openapi(getApplicationById, async (c) => {
     });
 
     if (!application) return c.json({ error: "Application not found" }, 404);
-    if (jwtPayload.id !== application.userId && jwtPayload.role !== "institute")
+    if (jwtPayload.id !== application.userId && jwtPayload.role !== "INSTITUTE")
       return c.json({ error: "Forbidden" }, 403);
 
     return c.json(application, 200);

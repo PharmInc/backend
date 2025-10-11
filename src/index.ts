@@ -4,7 +4,7 @@ import { serve } from "@hono/node-server";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { swaggerUI } from "@hono/swagger-ui";
 import { cors } from "hono/cors";
-import { type JwtVariables } from "hono/jwt";
+import { type JwtVariables, jwt } from "hono/jwt";
 
 import authRouter from "./routes/auth/index.js";
 
@@ -35,9 +35,26 @@ app.openAPIRegistry.registerComponent("securitySchemes", "Bearer", {
   type: "http",
   scheme: "bearer",
 });
+app.use(
+  "*",
+  cors({
+    origin: "*",
+  })
+);
 
-app.use("*", cors({ origin: process.env.ALLOWED_ORIGINS?.split(",") || "*" }));
+app.use("*", async (c, next) => {
+  const path = c.req.path;
+  console.log(`Request path: ${path}`);
+  const isPublic =
+    path.startsWith("/v1/pub") || path === "/docs" || path === "/openapi.json";
 
+  if (isPublic) {
+    return next();
+  }
+
+  // Apply JWT if route is not public
+  return jwt({ secret })(c, next);
+});
 app.doc("/openapi.json", {
   openapi: "3.0.0",
   info: {
@@ -48,21 +65,21 @@ app.doc("/openapi.json", {
 
 app.use("/docs", swaggerUI({ url: "/openapi.json" }));
 
-app.route("/v1/auth", authRouter);
+app.route("/v1/pub/auth", authRouter);
 
-app.route("/v1/user", privUserRouter);
-app.route("/v1/user", pubUserRouter);
+app.route("/v1/priv/user", privUserRouter);
+app.route("/v1/pub/user", pubUserRouter);
 
-app.route("/v1/institute", privInstituteRouter);
-app.route("/v1/institute", pubInstituteRouter);
+app.route("/v1/priv/institute", privInstituteRouter);
+app.route("/v1/pub/institute", pubInstituteRouter);
 
-app.route("/v1/job", pubJobRouter);
-app.route("/v1/job", privJobRouter);
+app.route("/v1/priv/job", pubJobRouter);
+app.route("/v1/pub/job", privJobRouter);
 
-app.route("/v1/application", privApplicationRouter);
+app.route("/v1/priv/pplication", privApplicationRouter);
 
-app.route("/v1/specialty", privSpecialtyRouter);
-app.route("/v1/specialty", pubSpecialtyRouter);
+app.route("/v1/priv/specialty", privSpecialtyRouter);
+app.route("/v1/pub/specialty", pubSpecialtyRouter);
 
 const port = 3000;
 console.log(`Server is running on http://localhost:${port}`);
