@@ -11,7 +11,6 @@ const logger = getServiceLogger("User");
 // CREATE USER
 userRouter.openapi(createUser, async (c) => {
   const jwtPayload = c.get("jwtPayload");
-  console.log(jwtPayload);
   if (!jwtPayload || !jwtPayload.id) {
     logger.warn("JWT payload missing or invalid");
     return c.json({ error: "Unauthorized" }, 400);

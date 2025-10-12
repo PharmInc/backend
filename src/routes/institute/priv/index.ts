@@ -52,6 +52,7 @@ instituteRouter.openapi(createInstitute, async (c) => {
     const institute = await prisma.institute.create({
       data: {
         ...instituteData,
+        id: jwtPayload.id,
         specialties: instituteData.specialties
           ? {
               connectOrCreate: instituteData.specialties.map((s) => ({
@@ -72,7 +73,6 @@ instituteRouter.openapi(createInstitute, async (c) => {
   }
 });
 
-// UPDATE INSTITUTE
 instituteRouter.openapi(updateInstitute, async (c) => {
   const { id } = c.req.valid("param");
 
