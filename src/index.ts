@@ -73,8 +73,8 @@ app.route("/v1/pub/user", pubUserRouter);
 app.route("/v1/priv/institute", privInstituteRouter);
 app.route("/v1/pub/institute", pubInstituteRouter);
 
-app.route("/v1/priv/job", pubJobRouter);
-app.route("/v1/pub/job", privJobRouter);
+app.route("/v1/pub/job", pubJobRouter);
+app.route("/v1/priv/job", privJobRouter);
 
 app.route("/v1/priv/application", privApplicationRouter);
 

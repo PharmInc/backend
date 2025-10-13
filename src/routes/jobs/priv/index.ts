@@ -10,6 +10,7 @@ const logger = getServiceLogger("Job");
 
 jobRouter.openapi(createJob, async (c) => {
   const jwtPayload = c.get("jwtPayload");
+  console.log(jwtPayload);
   if (!jwtPayload || !jwtPayload.id || jwtPayload.role !== "INSTITUTE") {
     logger.warn("Unauthorized job creation attempt");
     return c.json({ error: "Forbidden: only institutes may create jobs" }, 403);

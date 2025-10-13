@@ -8,7 +8,7 @@ export const UserSchema = z
       description:
         "Unique identifier for the user (UUID). **Note:** This is the same as the `Auth.id` (User ID = Auth ID).",
     }),
-    created_at: z.date().openapi({
+    created_at: z.coerce.date().openapi({
       description: "Timestamp when the user record was created (ISO 8601).",
     }),
     name: z.string().openapi({

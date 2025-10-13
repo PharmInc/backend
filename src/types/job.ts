@@ -7,10 +7,10 @@ export const JobSchema = z
     id: z.string().openapi({
       description: "Unique identifier for the job (UUID).",
     }),
-    created_at: z.date().openapi({
+    created_at: z.coerce.date().openapi({
       description: "Timestamp when the job was created.",
     }),
-    updated_at: z.date().openapi({
+    updated_at: z.coerce.date().openapi({
       description: "Timestamp when the job was last updated.",
     }),
     title: z.string().openapi({
@@ -47,7 +47,7 @@ export const JobSchema = z
     salaryCurrency: z.string().nullable().default("INR").openapi({
       description: "Currency for the salary range (default: INR).",
     }),
-    applicationDeadline: z.date().nullable().optional().openapi({
+    applicationDeadline: z.coerce.date().nullable().optional().openapi({
       description: "Deadline for job applications.",
     }),
     contactEmail: z.string().email().nullable().optional().openapi({

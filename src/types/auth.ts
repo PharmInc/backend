@@ -6,7 +6,7 @@ export const AuthSchema = z
     id: z.string().openapi({
       description: "Unique identifier for the auth record (UUID).",
     }),
-    created_at: z.date().openapi({
+    created_at: z.coerce.date().openapi({
       description: "Timestamp when the auth record was created (ISO 8601).",
     }),
     email: z.string().email().openapi({

@@ -5,10 +5,10 @@ export const ApplicationSchema = z
     id: z.string().openapi({
       description: "Unique identifier for the application (UUID).",
     }),
-    created_at: z.date().openapi({
+    created_at: z.coerce.date().openapi({
       description: "Timestamp when the application was created.",
     }),
-    updated_at: z.date().openapi({
+    updated_at: z.coerce.date().openapi({
       description: "Timestamp when the application was last updated.",
     }),
 
@@ -16,7 +16,7 @@ export const ApplicationSchema = z
       description:
         "Current status of the application. Can be 'pending', 'accepted', or 'rejected'.",
     }),
-    appliedDate: z.date().openapi({
+    appliedDate: z.coerce.date().openapi({
       description: "Date when the user applied for the job.",
     }),
     resumeUrl: z.string().url().openapi({

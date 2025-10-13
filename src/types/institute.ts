@@ -7,7 +7,7 @@ export const InstituteSchema = z
     id: z.string().openapi({
       description: "Unique identifier for the institute (UUID).",
     }),
-    created_at: z.date().openapi({
+    created_at: z.coerce.date().openapi({
       description:
         "Timestamp when the institute record was created (ISO 8601).",
     }),
