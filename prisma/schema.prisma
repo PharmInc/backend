@@ -97,6 +97,7 @@ model Job {
 
   specialties  Specialty[]   @relation("JobSpecialties")
   applications Application[]
+  JobView      JobView[]
 }
 
 model Application {
@@ -127,4 +128,13 @@ model Specialty {
   users      User[]      @relation("UserSpecialties")
   institutes Institute[] @relation("InstituteSpecialties")
   jobs       Job[]       @relation("JobSpecialties")
+}
+
+model JobView {
+  id       String   @id @default(uuid())
+  jobId    String
+  userId   String
+  viewedAt DateTime @default(now())
+
+  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
 }

@@ -201,3 +201,80 @@ export const deleteJob = createRoute({
     },
   },
 });
+
+export const getJobStats = createRoute({
+  method: "get",
+  path: "/{id}/stats",
+  tags: ["Job"],
+  request: {
+    params: z.object({
+      jobId: z.string(),
+    }),
+  },
+  responses: {
+    200: {
+      description: "Job stats retrieved successfully",
+      content: {
+        "application/json": {
+          schema: z.object({
+            totals: z.object({
+              totalCandidatesViewed: z.number(),
+              responseRate: z.number(),
+              averageResponseTime: z.number(),
+              conversionRate: z.number(),
+            }),
+            trends: z.array(
+              z.object({
+                date: z.string(),
+                views: z.number(),
+                responses: z.number(),
+              })
+            ),
+            weeklyComparison: z.array(
+              z.object({
+                week: z.string(),
+                engagement: z.number(),
+              })
+            ),
+            responseDistribution: z.record(z.number()),
+            engagementMetrics: z.object({
+              openRate: z.number(),
+              clickRate: z.number(),
+              applicationRate: z.number(),
+            }),
+          }),
+        },
+      },
+    },
+    403: {
+      description: "Forbidden",
+      content: {
+        "application/json": {
+          schema: z.object({
+            error: z.string(),
+          }),
+        },
+      },
+    },
+    404: {
+      description: "Not Found",
+      content: {
+        "application/json": {
+          schema: z.object({
+            error: z.string(),
+          }),
+        },
+      },
+    },
+    500: {
+      description: "Database Error",
+      content: {
+        "application/json": {
+          schema: z.object({
+            error: z.string(),
+          }),
+        },
+      },
+    },
+  },
+});

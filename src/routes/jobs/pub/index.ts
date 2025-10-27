@@ -8,6 +8,7 @@ import {
   searchJobs,
 } from "./route.js";
 import { Prisma } from "@prisma/client";
+import { viewTrackerMiddleware } from "../../../lib/view-tracker.js";
 
 const jobRouter = new OpenAPIHono();
 const logger = getServiceLogger("Job");
@@ -60,6 +61,7 @@ jobRouter.openapi(getAllJobs, async (c) => {
   }
 });
 
+jobRouter.use("/:id", viewTrackerMiddleware);
 jobRouter.openapi(getJobById, async (c) => {
   let param: { id: string };
   try {
