@@ -8,6 +8,7 @@ import {
   deleteInstitute,
   getMyInstitute,
   InstituteCreateUpdateSchema,
+  getInstituteStats,
 } from "./route.js";
 
 const instituteRouter = new OpenAPIHono();
@@ -181,6 +182,80 @@ instituteRouter.openapi(getMyInstitute, async (c) => {
   }
 
   return c.json(institute, 200);
+});
+
+instituteRouter.openapi(getInstituteStats, async (c) => {
+  const jwtPayload = c.get("jwtPayload") as
+    | { id: string; role: string }
+    | undefined;
+
+  if (!jwtPayload || jwtPayload.role !== "INSTITUTE") {
+    return c.json({ error: "Forbidden: only institutes may view stats" }, 403);
+  }
+
+  try {
+    const instituteId = jwtPayload.id;
+
+    const jobs = await prisma.job.findMany({
+      where: { instituteId },
+      select: { id: true },
+    });
+
+    const jobIds = jobs.map((j) => j.id);
+
+    const totalJobs = jobIds.length;
+
+    const totalViews = await prisma.jobView.count({
+      where: { jobId: { in: jobIds } },
+    });
+
+    const applications = await prisma.application.findMany({
+      where: { jobId: { in: jobIds } },
+      select: { created_at: true, updated_at: true, status: true },
+    });
+
+    const totalApplications = applications.length;
+    const totalResponses = applications.filter(
+      (a) => a.status !== "pending"
+    ).length;
+    const totalConversions = applications.filter(
+      (a) => a.status === "accepted"
+    ).length;
+
+    const avgResponseTime =
+      applications.length > 0
+        ? applications.reduce(
+            (acc, a) => acc + (a.updated_at.getTime() - a.created_at.getTime()),
+            0
+          ) /
+          applications.length /
+          3600000
+        : 0;
+
+    const responseRate =
+      totalViews > 0 ? (totalResponses / totalViews) * 100 : 0;
+    const conversionRate =
+      totalResponses > 0 ? (totalConversions / totalResponses) * 100 : 0;
+
+    const stats = {
+      totals: {
+        totalJobs,
+        totalViews,
+        totalApplications,
+        responseRate,
+        averageResponseTime: parseFloat(avgResponseTime.toFixed(2)),
+        conversionRate,
+      },
+      trends: [],
+      weeklyComparison: [],
+      responseDistribution: {},
+    };
+
+    return c.json(stats, 200);
+  } catch (err) {
+    console.error(err);
+    return c.json({ error: "Database error" }, 500);
+  }
 });
 
 export { instituteRouter as privInstituteRouter };

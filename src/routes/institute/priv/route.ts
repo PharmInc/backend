@@ -249,3 +249,61 @@ export const getMyInstitute = createRoute({
     },
   },
 });
+
+export const getInstituteStats = createRoute({
+  method: "get",
+  path: "/stats",
+  tags: ["Institute"],
+  description:
+    "Retrieve overall job statistics for all jobs posted by the authenticated institute.",
+  security: [{ BearerAuth: [] }],
+  responses: {
+    200: {
+      description: "Institute job statistics retrieved successfully.",
+      content: {
+        "application/json": {
+          schema: z.object({
+            totals: z.object({
+              totalJobs: z.number(),
+              totalViews: z.number(),
+              totalApplications: z.number(),
+              responseRate: z.number(),
+              averageResponseTime: z.number(),
+              conversionRate: z.number(),
+            }),
+            trends: z.array(
+              z.object({
+                date: z.string(),
+                views: z.number(),
+                applications: z.number(),
+              })
+            ),
+            weeklyComparison: z.array(
+              z.object({
+                week: z.string(),
+                engagement: z.number(),
+              })
+            ),
+            responseDistribution: z.record(z.number()),
+          }),
+        },
+      },
+    },
+    403: {
+      description: "Forbidden: only institutes may view stats",
+      content: {
+        "application/json": {
+          schema: z.object({ error: z.string() }),
+        },
+      },
+    },
+    500: {
+      description: "Database Error",
+      content: {
+        "application/json": {
+          schema: z.object({ error: z.string() }),
+        },
+      },
+    },
+  },
+});
