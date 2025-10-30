@@ -8,6 +8,71 @@ import { Prisma } from "@prisma/client";
 const userRouter = new OpenAPIHono();
 const logger = getServiceLogger("User");
 
+userRouter.openapi(searchUsers, async (c) => {
+  let query: UserQuery;
+  try {
+    query = c.req.valid("query");
+  } catch (err) {
+    logger.warn({ err }, "Invalid search query parameters");
+    return c.json({ error: "Invalid query parameters" }, 400);
+  }
+
+  const { name, specialties, location, role, verified, gender } = query;
+  const page = parseInt(query.page || "1");
+  const pageSize = parseInt(query.pageSize || "20");
+  const skip = (page - 1) * pageSize;
+  const take = pageSize;
+
+  // Build Prisma filter
+  const where: Prisma.UserWhereInput = {};
+
+  // Name search
+  if (name) {
+    where.name = { contains: name, mode: "insensitive" };
+  }
+
+  // Filter specialties (comma-separated string to array)
+  if (specialties) {
+    const specialtyArray = specialties.split(",").map((s) => s.trim());
+    if (specialtyArray.length > 0) {
+      where.specialties = {
+        some: {
+          OR: specialtyArray.map((s) => ({
+            name: { equals: s, mode: "insensitive" },
+          })),
+        },
+      };
+    }
+  }
+
+  // Other filters
+  if (location) where.location = { equals: location, mode: "insensitive" };
+  if (role) where.role = role as Prisma.UserWhereInput["role"];
+  if (verified !== undefined) where.verified = verified === "true";
+  if (gender) where.gender = { equals: gender, mode: "insensitive" };
+
+  try {
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { created_at: "desc" },
+        include: { specialties: true },
+      }),
+      prisma.user.count({ where }),
+    ]);
+
+    logger.info(
+      { query, page, pageSize, total },
+      "Fetched users search results"
+    );
+    return c.json({ users, page, pageSize, total }, 200);
+  } catch (err) {
+    logger.error({ err, query }, "Database error during searchUsers");
+    return c.json({ error: "Database error" }, 500);
+  }
+});
 userRouter.openapi(getAllUsers, async (c) => {
   let query: UserQuery;
   try {
@@ -82,72 +147,6 @@ userRouter.openapi(getUserById, async (c) => {
     return c.json(user, 200);
   } catch (err) {
     logger.error({ err, id }, "Database error during getUserById");
-    return c.json({ error: "Database error" }, 500);
-  }
-});
-
-userRouter.openapi(searchUsers, async (c) => {
-  let query: UserQuery;
-  try {
-    query = c.req.valid("query");
-  } catch (err) {
-    logger.warn({ err }, "Invalid search query parameters");
-    return c.json({ error: "Invalid query parameters" }, 400);
-  }
-
-  const { name, specialties, location, role, verified, gender } = query;
-  const page = parseInt(query.page || "1");
-  const pageSize = parseInt(query.pageSize || "20");
-  const skip = (page - 1) * pageSize;
-  const take = pageSize;
-
-  // Build Prisma filter
-  const where: Prisma.UserWhereInput = {};
-
-  // Name search
-  if (name) {
-    where.name = { contains: name, mode: "insensitive" };
-  }
-
-  // Filter specialties (comma-separated string to array)
-  if (specialties) {
-    const specialtyArray = specialties.split(",").map((s) => s.trim());
-    if (specialtyArray.length > 0) {
-      where.specialties = {
-        some: {
-          OR: specialtyArray.map((s) => ({
-            name: { equals: s, mode: "insensitive" },
-          })),
-        },
-      };
-    }
-  }
-
-  // Other filters
-  if (location) where.location = { equals: location, mode: "insensitive" };
-  if (role) where.role = role as Prisma.UserWhereInput["role"];
-  if (verified !== undefined) where.verified = verified === "true";
-  if (gender) where.gender = { equals: gender, mode: "insensitive" };
-
-  try {
-    const [users, total] = await Promise.all([
-      prisma.user.findMany({
-        where,
-        skip,
-        take,
-        orderBy: { created_at: "desc" },
-        include: { specialties: true },
-      }),
-      prisma.user.count({ where }),
-    ]);
-
-    logger.info(
-      { query, page, pageSize, total },
-      "Fetched users search results"
-    );
-    return c.json({ users, page, pageSize, total }, 200);
-  } catch (err) {
-    logger.error({ err, query }, "Database error during searchUsers");
     return c.json({ error: "Database error" }, 500);
   }
 });

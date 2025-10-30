@@ -11,6 +11,67 @@ import { Prisma } from "@prisma/client";
 const instituteRouter = new OpenAPIHono();
 const logger = getServiceLogger("Institute");
 
+instituteRouter.openapi(searchInstitutes, async (c) => {
+  let query: Record<string, string | undefined>;
+  try {
+    query = c.req.valid("query");
+  } catch (err) {
+    logger.warn({ err }, "Invalid search query parameters");
+    return c.json({ error: "Invalid query parameters" }, 400);
+  }
+
+  const { name, specialty, location, role, verified } = query;
+  const page = parseInt(query.page || "1");
+  const pageSize = parseInt(query.pageSize || "20");
+  const skip = (page - 1) * pageSize;
+  const take = pageSize;
+
+  const where: Prisma.InstituteWhereInput = {};
+
+  // Name search
+  if (name) {
+    where.name = { contains: name, mode: "insensitive" };
+  }
+
+  // Specialties search (comma-separated)
+  if (specialty) {
+    const specialtyArray = specialty.split(",").map((s) => s.trim());
+    where.specialties = {
+      some: {
+        OR: specialtyArray.map((s) => ({
+          name: { equals: s, mode: "insensitive" },
+        })),
+      },
+    };
+  }
+
+  // Other filters
+  if (location) where.location = { equals: location, mode: "insensitive" };
+  if (role) where.role = role as Prisma.InstituteWhereInput["role"];
+  if (verified !== undefined) where.verified = verified === "true";
+
+  try {
+    const [institutes, total] = await Promise.all([
+      prisma.institute.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { created_at: "desc" },
+        include: { specialties: true },
+      }),
+      prisma.institute.count({ where }),
+    ]);
+
+    logger.info(
+      { query, page, pageSize, total },
+      "Fetched institutes search results"
+    );
+    return c.json({ institutes, page, pageSize, total }, 200);
+  } catch (err) {
+    logger.error({ err, query }, "Database error during searchInstitutes");
+    return c.json({ error: "Database error" }, 500);
+  }
+});
 // GET ALL INSTITUTES
 instituteRouter.openapi(getAllInstitutes, async (c) => {
   let query: Record<string, string | undefined>;
@@ -110,66 +171,5 @@ instituteRouter.openapi(getInstituteById, async (c) => {
 });
 
 // SEARCH INSTITUTES
-instituteRouter.openapi(searchInstitutes, async (c) => {
-  let query: Record<string, string | undefined>;
-  try {
-    query = c.req.valid("query");
-  } catch (err) {
-    logger.warn({ err }, "Invalid search query parameters");
-    return c.json({ error: "Invalid query parameters" }, 400);
-  }
-
-  const { name, specialty, location, role, verified } = query;
-  const page = parseInt(query.page || "1");
-  const pageSize = parseInt(query.pageSize || "20");
-  const skip = (page - 1) * pageSize;
-  const take = pageSize;
-
-  const where: Prisma.InstituteWhereInput = {};
-
-  // Name search
-  if (name) {
-    where.name = { contains: name, mode: "insensitive" };
-  }
-
-  // Specialties search (comma-separated)
-  if (specialty) {
-    const specialtyArray = specialty.split(",").map((s) => s.trim());
-    where.specialties = {
-      some: {
-        OR: specialtyArray.map((s) => ({
-          name: { equals: s, mode: "insensitive" },
-        })),
-      },
-    };
-  }
-
-  // Other filters
-  if (location) where.location = { equals: location, mode: "insensitive" };
-  if (role) where.role = role as Prisma.InstituteWhereInput["role"];
-  if (verified !== undefined) where.verified = verified === "true";
-
-  try {
-    const [institutes, total] = await Promise.all([
-      prisma.institute.findMany({
-        where,
-        skip,
-        take,
-        orderBy: { created_at: "desc" },
-        include: { specialties: true },
-      }),
-      prisma.institute.count({ where }),
-    ]);
-
-    logger.info(
-      { query, page, pageSize, total },
-      "Fetched institutes search results"
-    );
-    return c.json({ institutes, page, pageSize, total }, 200);
-  } catch (err) {
-    logger.error({ err, query }, "Database error during searchInstitutes");
-    return c.json({ error: "Database error" }, 500);
-  }
-});
 
 export { instituteRouter as pubInstituteRouter };
